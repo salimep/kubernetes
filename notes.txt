@@ -1,0 +1,42 @@
+Create your first key:
+
+
+openssl genrsa -out test-ingress-1.key 2048
+Create your first certificate signing request:
+
+
+openssl req -new -key test-ingress-1.key -out test-ingress-1.csr \
+    -subj "/CN=FIRST_DOMAIN"
+Replace FIRST_DOMAIN with a domain name that you own.
+
+For example, suppose you want the load balancer to serve requests from the example.com domain. Your certificate signing request would look like this:
+
+
+openssl req -new -key test-ingress-1.key -out test-ingress-1.csr \
+    -subj "/CN=example.com"
+Create your first certificate:
+
+
+openssl x509 -req -days 365 -in test-ingress-1.csr -signkey test-ingress-1.key \
+    -out test-ingress-1.crt
+Create your second key:
+
+
+openssl genrsa -out test-ingress-2.key 2048
+Create your second certificate signing request:
+
+
+openssl req -new -key test-ingress-2.key -out test-ingress-2.csr \
+    -subj "/CN=SECOND_DOMAIN"
+Replace SECOND_DOMAIN with another domain name that you own.
+
+For example, suppose you want the load balancer to serve requests from the examplepetstore.com domain. Your certificate signing request would look like this:
+
+
+openssl req -new -key test-ingress-2.key -out test-ingress-2.csr \
+    -subj "/CN=examplepetstore.com"
+Create your second certificate:
+
+
+openssl x509 -req -days 365 -in test-ingress-2.csr -signkey test-ingress-2.key \
+    -out test-ingress-2.crt
