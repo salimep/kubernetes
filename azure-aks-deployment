@@ -1,0 +1,28 @@
+resourceGroup="myaks_au_2"
+vnet="myVirtualNetwork"
+location="australiaeast"
+clusterName="myAKSCluster"
+
+ACR_NAME=imagessalimonline
+SERVICE_PRINCIPAL_NAME=myAKSClusterServicePrincipal
+
+# Create the resource group
+az group create --name $resourceGroup --location $location
+
+# Create our two subnet network 
+az network vnet create -g $resourceGroup --location $location --name $vnet --address-prefixes 10.0.0.0/8 -o none 
+az network vnet subnet create -g $resourceGroup --vnet-name $vnet --name nodesubnet --address-prefixes 10.240.0.0/16 -o none 
+az network vnet subnet create -g $resourceGroup --vnet-name $vnet --name podsubnet --address-prefixes 10.241.0.0/16 -o none
+
+
+VNET_ID=$(az network vnet show --resource-group $resourceGroup --name $vnet --query id -o tsv)
+node_SUBNET=$(az network vnet subnet show --resource-group $resourceGroup --vnet-name $vnet --name  nodesubnet  --query id -o tsv)
+pod_SUBNET=$(az network vnet subnet show --resource-group $resourceGroup --vnet-name $vnet --name  podsubnet --query id -o tsv)
+appid=$(az ad sp list  --display-name myAKSClusterServicePrincipal --query [].appId 0o tsv)
+
+
+az aks create -n $clusterName -g $resourceGroup -l $location --max-pods 100 --node-count 2 --network-plugin azure --vnet-subnet-id $node_SUBNET --pod-subnet-id $pod_SUBNET --service-principal  $appid  --client-secret RRp8Q~Qwi-xxxxx-xxx --node-vm-size standard_a2_v2
+
+az role assignment create --assignee $SERVICE_PRINCIPAL_ID --scope $ACR_REGISTRY_ID --role acrpull
+
+az aks get-credentials --resource-group $resourceGroup --name $clusterName
